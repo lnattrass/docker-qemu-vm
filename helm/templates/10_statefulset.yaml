@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-vm
+  name: {{ .Release.Name }}-vm
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  serviceName: {{ .Release.Name }}-vm
+  replicas: {{ .Values.replicas }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Release.Name }}-pvc
+    spec:
+      storageClassName: cephfs
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.vm_claim_size }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}-vm
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: {{ .Values.networks | toJson | quote }}
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-vm
+    spec:
+      restartPolicy: {{ .Values.restartPolicy }}
+      {{- if .Values.userdata }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-config
+      {{ end }}
+      containers:
+      - image: "{{ .Values.image_repository }}:{{ .Values.image_tag }}"
+        imagePullPolicy: "{{ .Values.image_pull_policy }}"
+        name: vm
+        args:
+        {{ if .Values.cpu }}- --cpu={{ .Values.cpu }}{{ end }}
+        {{ if .Values.ram }}- --ram={{ .Values.ram }}{{ end }}
+        {{- range .Values.disks }}
+        - --disk={{ . }}
+        {{- end }}
+        {{- if .Values.immutable }}
+        - --immutable
+        {{- end }}
+        {{ if .Values.vm_image_source }}- --image-source={{ .Values.vm_image_source }}{{ end }}
+        {{- if .Values.vm_image_always_pull }}
+        - --image-always-pull
+        {{- end }}
+        {{- if .Values.passthrough_first_nic }}
+        - --passthrough-first-nic
+        - --nic=eth0
+        {{- end }}
+        {{- range .Values.networks }}
+        - --nic={{ .interface }}
+        {{- end }}
+        {{ if .Values.userdata }}- --user-data=/vm/cloud-init/user-data{{ end }}
+        volumeMounts:
+        - name: {{ .Release.Name }}-pvc
+          mountPath: /vm/data
+        {{- if .Values.userdata }}
+        - name: config
+          mountPath: /vm/cloud-init
+        {{- end }}
+        lifecycle:
+          preStop:
+            exec:
+              command: [ "/bin/bash", "/vm/shutdown" ]
+    
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+    
+        resources:
+          requests:
+            cpu: 100m

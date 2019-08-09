@@ -1,0 +1,42 @@
+# Namespaces:
+#namespace: vhosts
+
+# CPU and RAM resources (in mb)
+cpu: 2
+ram: 2048
+
+# Disks, images, storage, etc:
+disks: 
+- 20G
+immutable: False
+vm_image_source: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+vm_image_always_pull: False
+vm_claim_size: 20G
+
+storage_class: cephfs
+
+# Replicas/RestartPolicies
+replicas: 1
+restartPolicy: Always
+
+# Network configuration
+#passthrough_first_nic: True
+
+networks:
+- name: br-servers-l2
+  namespace: networks
+  interface: nic1
+
+userdata: |
+    #cloud-config
+    password: 123
+    chpasswd: { expire: False }
+    ssh_pwauth: True
+
+# vnc_port: 5900
+
+
+# qemu-version
+image_tag: v2.0
+image_repository: local-registry.i.ling.id.au/qemu/vm
+image_pull_policy: Always

@@ -1,0 +1,14 @@
+apiVersion: v1
+description: Virtual Machine Template
+home: https://gitlab.com/lnattrass/docker-qemu-vm
+keywords:
+- qemu
+- virtual-machine
+- kvm
+maintainers:
+- email: lnattrass@gitlab.com
+  name: lnattrass
+name: qemu-vm
+sources:
+- https://gitlab.com/lnattrass/docker-qemu-vm
+version: 1.0.0

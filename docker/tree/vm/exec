@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+
+QGA_SOCKET="/run/qemu-qga"
+
+if [ -e "${QGA_SOCKET}" ]; then
+  echo "Press CTRL+[ to exit the console"
+  sleep 1
+	echo "{'| socat - UNIX-CONNECT:${QGA_SOCKET}
+else
+	echo "Serial socket does not exist"
+fi

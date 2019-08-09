@@ -1,0 +1,8 @@
+#cloud-config
+ssh_pwauth: True
+password: ubuntu
+chpasswd:
+    expire: False
+bootcmd:
+    - [ /bin/sh, '-c', 'echo "Early-boot reached. Powering off." > /dev/ttyS1']
+    - [ '/sbin/poweroff' ]
