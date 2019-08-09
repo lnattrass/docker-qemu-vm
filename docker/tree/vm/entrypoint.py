@@ -319,14 +319,16 @@ class QemuNetworkInterface(QemuConfig):
         "version": 2,
         "ethernets": {
           self.interface: {
-            "match": self.mac_address
-          },
-          "addresses": addresses,
-          "nameservers": {
-            "addresses": self.dns_config['nameservers'],
-            "search": self.dns_config['search']
-          },
-          "routes": self.routes
+            "match": {
+              "macaddress": self.mac_address
+            },
+            "addresses": addresses,
+            "nameservers": {
+              "addresses": self.dns_config['nameservers'],
+              "search": self.dns_config['search']
+            },
+            "routes": self.routes
+          }
         }
       }
     else:
@@ -447,8 +449,6 @@ class QemuNetworkManager(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     cmdline = []
-    #  '-device', f"pcie-root-port,id={self.pcie_bus_id},bus=pcie.0,addr={self.pcie_bus_addr}.0,chassis=1,multifunction=on"
-    #]
     for network in self.networks:
       cmdline.extend(network.cmdline())
     return cmdline
