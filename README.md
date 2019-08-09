@@ -12,12 +12,16 @@ Currently the requested PV size is not functional.
 ```bash
 $ git clone https://github.com/lnattrass/docker-qemu-vm.git && cd docker-qemu-vm
 $ cd docker-qemu-vm
-$ cat <<EOF user-data
+$ cat <<EOF > ./userdata
 #cloud-config
 password: ubuntu
-chpasswd: { export: False }
+chpasswd: { expire: False }
 EOF
-$ helm template --name=test-vm --set=cpu=1 --set=replicas=2 | kubectl apply -f -
+$ helm template --name=test --set=cpu=1 --set=replicas=2 --set-file userdata=./userdata helm |  kubectl apply -f -
+$ kubectl get pods
+NAME                           READY   STATUS              RESTARTS   AGE
+test-vm-0                   0/1     ContainerCreating   0          3s
+$ kubectl logs -f test-vm-0 
 $ kubectl exec -it test-vm-0 /vm/console
 Press CTRL+O to exit the console
 

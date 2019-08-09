@@ -37,6 +37,6 @@ userdata: |
 
 
 # qemu-version
-image_tag: v2.0
-image_repository: local-registry.i.ling.id.au/qemu/vm
+image_tag: latest
+image_repository: lnattrass/docker-qemu-vm
 image_pull_policy: Always
