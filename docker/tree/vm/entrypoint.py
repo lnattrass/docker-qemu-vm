@@ -425,9 +425,7 @@ class QemuNetworkManager(QemuConfig):
       passthrough=True
 
     network = QemuNetworkInterface(interface=interface, passthrough=passthrough, pcie_bus_id=self.pcie_bus_id, pcie_bus_addr=self.pcie_bus_addr, pcie_bus_index=len(self.networks))
-    if passthrough:
-      self.network_config = network.network_config
-      
+    
     log.info(f"Adding network '{interface}' fn={len(self.networks)} passthrough={passthrough}")
     self.networks.append(network)
 
@@ -443,8 +441,10 @@ class QemuNetworkManager(QemuConfig):
     """
     Configure each network's bridge, tap, firewalls, etc.
     """
-    for network in self.networks:    
+    for network in self.networks:
       network.prepare()
+      if network.passthrough:
+        self.network_config = network.network_config      
 
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
