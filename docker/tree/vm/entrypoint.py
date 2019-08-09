@@ -12,6 +12,8 @@ import textwrap
 import humanfriendly
 import subprocess, sys
 from urllib.parse import urlparse
+import urllib.request
+
 
 import logbook
 logbook.StreamHandler(sys.stdout, level='INFO', bubble=True).push_application()
@@ -555,9 +557,6 @@ class PersistentConfig():
 
 # TODO: Utility class this?
 def _pull_disk_image(image_source, image_dest):
-  if not image_source:
-    raise ValueError('Need to pull image, but no image_source is set')
-
   # Determine how to pull this image:
   image_source_path = urlparse(image_source)
   if image_source_path.scheme.lower() in ('s3', 's3s'):
@@ -574,13 +573,10 @@ def _pull_disk_image(image_source, image_dest):
   # Delete the temporary image:
   os.remove(f"{image_dest}.tmp")
 
-def _pull_disk_image_http(src, dst):
-  raise NotImplementedError('Not implemented yet.')
+def _pull_disk_image_http(image_source, image_dest):
+  urllib.request.urlretrieve(image_source, image_dest)
 
 def _pull_disk_image_s3(image_source, image_dest):
-  if image_dest == '':
-    raise ValueError("Image destination for S3 is unset")
-
   scheme = image_source.scheme.replace('s3', 'http')
   image_host = f"{scheme}://{image_source.netloc}"
 
