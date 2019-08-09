@@ -25,8 +25,12 @@ spec:
       app.kubernetes.io/name: {{ .Release.Name }}-vm
   template:
     metadata:
-      annotations:
+      annotations: 
+      {{- if .Values.networks }}
         k8s.v1.cni.cncf.io/networks: {{ .Values.networks | toJson | quote }}
+      {{- else }}
+        {}
+      {{- end }}
       labels:
         app.kubernetes.io/name: {{ .Release.Name }}-vm
     spec:
