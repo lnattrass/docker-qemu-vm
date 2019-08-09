@@ -1,18 +1,9 @@
 #!/bin/bash
 #
-# Put exit-hooks here
-. /vm/data/config
-
-. /vm/data/config
-
-if [ "${MONITOR_SOCKET}" == "" ]; then
-  MONITOR_SOCKET="/run/qemu-monitor"
-  echo "Using default qemu-monitor"
-fi
+MONITOR_SOCKET="/run/qemu-monitor"
 
 if [ -e "${MONITOR_SOCKET}" ]; then
-	echo "change ide0-cd1 /opt/virtio-drivers.iso" | socat - UNIX-CONNECT:/vm/monitor
+	echo "change ide0-cd1 /opt/virtio-drivers.iso" | socat - UNIX-CONNECT:${MONITOR_SOCKET}
 else
 	echo "Monitor socket does not exist."
 fi
-

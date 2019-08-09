@@ -20,12 +20,12 @@ replicas: 1
 restartPolicy: Always
 
 # Network configuration
-#passthrough_first_nic: True
+passthrough_first_nic: True
 
-networks:
-- name: br-servers-l2
-  namespace: networks
-  interface: nic1
+#networks:
+#- name: br-servers-l2
+#  namespace: networks
+#  interface: nic1
 
 userdata: |
     #cloud-config

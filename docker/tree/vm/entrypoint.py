@@ -634,8 +634,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
   type=click.Path(exists=True, dir_okay=False, resolve_path=True), 
   help='Path to user-data')
 
-@click.option('--serial', type=str, default='unix:/run/qemu-serial0,server,nowait', help="Connect serial port")
-@click.option('--debug', type=bool, default=True, help="Debug configure script")
+@click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
 def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, serial, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
