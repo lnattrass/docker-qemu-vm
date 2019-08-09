@@ -454,18 +454,21 @@ class QemuNetworkManager(QemuConfig):
     return cmdline
 
 class QemuConfigDrive(QemuConfig):
-  def __init__(self, path, user_data_path=None, network_manager=None):
+  def __init__(self, path, user_data_path=[], network_manager=None):
     self.path = path
     self.user_data_path = user_data_path
     self.network_manager = network_manager
 
   def prepare(self):
     log.info("Generating config drive:")
-
     with tempfile.TemporaryDirectory() as tempdir:
       if self.user_data_path:
-        log.debug(f"Found user-data at {self.user_data_path}")
-        shutil.copyfile(self.user_data_path, os.path.join(tempdir, 'user-data'))
+        with open(os.path.join(tempdir, 'user-data'), 'w') as outfile:
+          for user_data_file in self.user_data_path:
+            log.debug(f"Found user-data at {self.user_data_path}")
+            with open(user_data_file) as infile:
+              for line in infile:
+                outfile.write(line)
       
       instance_metadata = {
         'instance_id': socket.gethostname()
@@ -632,7 +635,8 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 @click.option('--user-data', 
   type=click.Path(exists=True, dir_okay=False, resolve_path=True), 
-  help='Path to user-data')
+  multiple=True,
+  help='Path to user-data (multiple will be concatenated, in order)')
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")

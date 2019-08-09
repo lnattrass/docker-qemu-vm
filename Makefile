@@ -11,6 +11,6 @@ push:
 	docker push $(NAME):$(RELEASE)
 
 test:
-	docker-compose up
+	cd test && docker-compose up
 
 all: push build
