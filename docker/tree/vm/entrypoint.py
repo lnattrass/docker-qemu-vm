@@ -456,10 +456,11 @@ class QemuNetworkManager(QemuConfig):
     return cmdline
 
 class QemuConfigDrive(QemuConfig):
-  def __init__(self, path, user_data_path=[], network_manager=None):
+  def __init__(self, path, user_data_path=[], instance_metadata_keys=[], network_manager=None):
     self.path = path
     self.user_data_path = user_data_path
     self.network_manager = network_manager
+    self.instance_metadata_keys = instance_metadata_keys
 
   def prepare(self):
     log.info("Generating config drive:")
@@ -472,9 +473,14 @@ class QemuConfigDrive(QemuConfig):
               for line in infile:
                 outfile.write(line)
       
+      # Passthrough for secrets-ey-stuff
       instance_metadata = {
-        'instance_id': socket.gethostname()
+        "instance_id": socket.gethostname()
       }
+      for key in self.instance_metadata_keys:
+        if key in os.environ:
+          instance_metadata[key] = os.environ[key]
+
       with open(os.path.join(tempdir, 'meta-data'), 'w') as stream:
         yaml.safe_dump(instance_metadata, stream)
       log.debug(f"meta-data:\n{instance_metadata}")
@@ -485,7 +491,7 @@ class QemuConfigDrive(QemuConfig):
       with open(os.path.join(tempdir, 'vendor-data'), 'w') as stream:
         stream.write("#cloud-config\n")
         yaml.safe_dump(vendor_data, stream)
-      log.debug(f"meta-data:\n{vendor_data}")
+      log.debug(f"vendor-data:\n{vendor_data}")
 
 
       if self.network_manager and self.network_manager.network_config:
@@ -634,9 +640,14 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
   multiple=True,
   help='Path to user-data (multiple will be concatenated, in order)')
 
+@click.option('--instance-md-key',
+type=str, multiple=True,
+help='Retrieve metadata from environment variable'
+)
+
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, test, debug):
+def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_md_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
@@ -664,7 +675,7 @@ def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, im
     qemu_options.append(networks)
     
     # Create the config-drive
-    qemu_options.append(QemuConfigDrive(path=os.path.join(vm_data, '/config.iso'), user_data_path=user_data, network_manager=networks))
+    qemu_options.append(QemuConfigDrive(path=os.path.join(vm_data, '/config.iso'), instance_metadata_keys=instance_md_key, user_data_path=user_data, network_manager=networks))
     
     # Configure each class, if needed:
     config.load_config(qemu_options)
