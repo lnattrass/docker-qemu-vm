@@ -456,11 +456,11 @@ class QemuNetworkManager(QemuConfig):
     return cmdline
 
 class QemuConfigDrive(QemuConfig):
-  def __init__(self, path, user_data_path=[], instance_metadata_keys=[], network_manager=None):
+  def __init__(self, path, user_data_path=[], instance_secret_keys=[], network_manager=None):
     self.path = path
     self.user_data_path = user_data_path
     self.network_manager = network_manager
-    self.instance_metadata_keys = instance_metadata_keys
+    self.instance_secret_keys = instance_secret_keys
 
   def prepare(self):
     log.info("Generating config drive:")
@@ -475,18 +475,23 @@ class QemuConfigDrive(QemuConfig):
       
       # Passthrough for secrets-ey-stuff
       instance_metadata = {
-        "instance_id": socket.gethostname()
+        "instance-id": socket.gethostname(),
+        "secrets": {}
       }
-      for key in self.instance_metadata_keys:
+      
+      for key in self.instance_secret_keys:
         if key in os.environ:
-          instance_metadata[key] = os.environ[key]
+          log.debug(f"Passing through secret from environment: {key}=<hidden>")
+          instance_metadata['secrets'][key] = os.environ[key]
+        else:
+          log.warning(f"Environment variable '{key}' does not exist.")
 
       with open(os.path.join(tempdir, 'meta-data'), 'w') as stream:
         yaml.safe_dump(instance_metadata, stream)
       log.debug(f"meta-data:\n{instance_metadata}")
 
       vendor_data = {
-        "hostname": instance_metadata['instance_id']
+        "hostname": instance_metadata['instance-id'],
       }
       with open(os.path.join(tempdir, 'vendor-data'), 'w') as stream:
         stream.write("#cloud-config\n")
@@ -563,12 +568,13 @@ class PersistentConfig():
 
 # TODO: Utility class this?
 def _pull_disk_image(image_source, image_dest):
+  log.info(f"Pulling disk image: {image_source}")
   # Determine how to pull this image:
   image_source_path = urlparse(image_source)
   if image_source_path.scheme.lower() in ('s3', 's3s'):
     _pull_disk_image_s3(image_source_path, f"{image_dest}.tmp")
   elif image_source_path.scheme.lower() in ('http', 'https'):
-    _pull_disk_image_http(image_source_path, f"{image_dest}.tmp")
+    _pull_disk_image_http(image_source, f"{image_dest}.tmp")
   else:
     raise ValueError(f"Unsupported scheme ({image_source_path.scheme}) for image_source: {image_source}")
 
@@ -640,14 +646,13 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
   multiple=True,
   help='Path to user-data (multiple will be concatenated, in order)')
 
-@click.option('--instance-md-key',
-type=str, multiple=True,
-help='Retrieve metadata from environment variable'
-)
+@click.option('--instance-secret-key',
+  type=str, multiple=True,
+  help='Retrieve metadata from environment variable. Metadata is available under ds.meta_data.secrets.<key-name> key in cloud-init')
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_md_key, test, debug):
+def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
@@ -675,7 +680,7 @@ def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, im
     qemu_options.append(networks)
     
     # Create the config-drive
-    qemu_options.append(QemuConfigDrive(path=os.path.join(vm_data, '/config.iso'), instance_metadata_keys=instance_md_key, user_data_path=user_data, network_manager=networks))
+    qemu_options.append(QemuConfigDrive(path=os.path.join(vm_data, 'config.iso'), instance_secret_keys=instance_secret_key, user_data_path=user_data, network_manager=networks))
     
     # Configure each class, if needed:
     config.load_config(qemu_options)

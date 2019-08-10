@@ -1,7 +1,7 @@
 
 .PHONY: all push
 
-NAME := local-registry.i.ling.id.au/qemu/vm
+NAME := test
 RELEASE := $(shell cat VERSION)
 
 .id: $(shell find docker)
@@ -11,8 +11,12 @@ push: .id
 	docker tag $(shell echo cat $<) $(NAME):$(RELEASE)
 	docker push $(NAME):$(RELEASE)
 
-test: .id
+test1: .id
 	docker tag $(shell cat $<) $(NAME):$(RELEASE)
-	cd test && docker-compose up
+	cd test && docker-compose up test1
+
+test2: .id
+	docker tag $(shell cat $<) $(NAME):$(RELEASE)
+	cd test && docker-compose up test2
 
 all: push build
