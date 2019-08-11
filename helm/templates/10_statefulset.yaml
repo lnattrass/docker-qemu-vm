@@ -52,11 +52,11 @@ spec:
         {{- if .Values.secrets }}
         env:
         {{- range $key, $val := .Values.secrets }}
-        - name: {{ $key | replace "-" "_" | upper }}
+        - name: {{ $key | replace "-" "_" }}
           valueFrom:
             secretKeyRef:
               name: {{ $.Release.Name }}-secret
-              key: {{ $key | replace "-" "_" | upper }}
+              key: {{ $key | replace "-" "_"  }}
         {{ end }}{{ end }}
         args:
         {{ if .Values.cpu }}- --cpu={{ .Values.cpu }}{{ end }}
@@ -81,7 +81,7 @@ spec:
         {{ if .Values.userdata }}- --user-data=/vm/cloud-init/user-data{{ end }}
         {{- if .Values.secrets }}
         {{- range $key, $val := .Values.secrets }}
-        - --instance-secret-key={{ $key | replace "-" "_" | upper }}
+        - --instance-secret-key={{ $key | replace "-" "_" }}
         {{- end }}
         {{- end }}
         
