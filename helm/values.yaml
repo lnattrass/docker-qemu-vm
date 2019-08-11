@@ -23,9 +23,8 @@ restartPolicy: Always
 passthrough_first_nic: True
 
 # node_selector
-node_selector:
-    kubernetes.io/hostname: host0
-    kubernetes.io/username: none
+#node_selector:
+#    kubernetes.io/hostname: node0
 
 #networks:
 #- name: br-servers-l2
@@ -39,9 +38,9 @@ userdata: |
     ssh_pwauth: True
 
 # Secrets are marshalled through the pod environment, so will be translated to CAPS with underscores
-secrets:
-    key: value
-    new_key: value2
+#secrets:
+#    key: value
+#    new_key: value2
 # vnc_port: 5900
 
 
