@@ -22,6 +22,11 @@ restartPolicy: Always
 # Network configuration
 passthrough_first_nic: True
 
+# node_selector
+node_selector:
+    kubernetes.io/hostname: host0
+    kubernetes.io/username: none
+
 #networks:
 #- name: br-servers-l2
 #  namespace: networks
@@ -33,6 +38,9 @@ userdata: |
     chpasswd: { expire: False }
     ssh_pwauth: True
 
+secrets:
+    key: value
+    new_key: value2
 # vnc_port: 5900
 
 

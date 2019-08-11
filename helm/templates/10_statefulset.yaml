@@ -35,6 +35,10 @@ spec:
         app.kubernetes.io/name: {{ .Release.Name }}-vm
     spec:
       restartPolicy: {{ .Values.restartPolicy }}
+      {{- if .Values.node_selector }}
+      nodeSelector:
+        {{ .Values.node_selector | toYaml | indent 8 | trim }}
+      {{- end }}
       {{- if .Values.userdata }}
       volumes:
       - name: config
@@ -45,6 +49,16 @@ spec:
       - image: "{{ .Values.image_repository }}:{{ .Values.image_tag }}"
         imagePullPolicy: "{{ .Values.image_pull_policy }}"
         name: vm
+        {{- if .Values.secrets }}
+        env:
+        {{- range $key, $val := .Values.secrets }}
+        - name: {{ $key }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Release.Name }}-secret
+              key: {{ $key }}
+        {{- end }}{{ end }}
+        
         args:
         {{ if .Values.cpu }}- --cpu={{ .Values.cpu }}{{ end }}
         {{ if .Values.ram }}- --ram={{ .Values.ram }}{{ end }}
