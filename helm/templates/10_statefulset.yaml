@@ -52,13 +52,12 @@ spec:
         {{- if .Values.secrets }}
         env:
         {{- range $key, $val := .Values.secrets }}
-        - name: {{ $key }}
+        - name: {{ $key | replace "-" "_" | upper }}
           valueFrom:
             secretKeyRef:
               name: {{ $.Release.Name }}-secret
-              key: {{ $key }}
-        {{- end }}{{ end }}
-        
+              key: {{ $key | replace "-" "_" | upper }}
+        {{ end }}{{ end }}
         args:
         {{ if .Values.cpu }}- --cpu={{ .Values.cpu }}{{ end }}
         {{ if .Values.ram }}- --ram={{ .Values.ram }}{{ end }}
@@ -80,6 +79,12 @@ spec:
         - --nic={{ .interface }}
         {{- end }}
         {{ if .Values.userdata }}- --user-data=/vm/cloud-init/user-data{{ end }}
+        {{- if .Values.secrets }}
+        {{- range $key, $val := .Values.secrets }}
+        - --instance-secret-key={{ $key | replace "-" "_" | upper }}
+        {{- end }}
+        {{- end }}
+        
         volumeMounts:
         - name: {{ .Release.Name }}-pvc
           mountPath: /vm/data
@@ -87,6 +92,7 @@ spec:
         - name: config
           mountPath: /vm/cloud-init
         {{- end }}
+        
         lifecycle:
           preStop:
             exec:

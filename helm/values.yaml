@@ -38,6 +38,7 @@ userdata: |
     chpasswd: { expire: False }
     ssh_pwauth: True
 
+# Secrets are marshalled through the pod environment, so will be translated to CAPS with underscores
 secrets:
     key: value
     new_key: value2
