@@ -31,18 +31,23 @@ passthrough_first_nic: True
 #  namespace: networks
 #  interface: nic1
 
-userdata: |
-    #cloud-config
-    password: 123
-    chpasswd: { expire: False }
-    ssh_pwauth: True
 
-# Secrets are marshalled through the pod environment, so will be translated to CAPS with underscores
+#userdata: |
+#    #cloud-config
+#    password: 123
+#    chpasswd: { expire: False }
+#    ssh_pwauth: True
+
+# Secrets are marshalled through the pod environment, so dashes will be replaced with underscores
 #secrets:
 #    key: value
 #    new_key: value2
 # vnc_port: 5900
 
+
+# Should userdata or secrets cause the image to redeploy?
+userdata_redeploy: False
+secrets_redeploy: False
 
 # qemu-version
 image_tag: latest

@@ -1,4 +1,4 @@
----
+{{- if .Values.userdata -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,4 +9,4 @@ metadata:
 data:
   user-data: |
     {{- .Values.userdata | nindent 4}}
-
+{{- end }}

@@ -49,8 +49,12 @@ spec:
       - image: "{{ .Values.image_repository }}:{{ .Values.image_tag }}"
         imagePullPolicy: "{{ .Values.image_pull_policy }}"
         name: vm
-        {{- if .Values.secrets }}
         env:
+        - name: USERDATA_SHA
+          value: {{ if and .Values.userdata_redeploy .Values.userdata }}{{ .Values.userdata | sha256sum }}{{else}}NA{{end}}
+        - name: SECRET_SHA
+          value: {{ if and .Values.secrets_redeploy .Values.secrets }}{{ .Values.secrets | sha256sum }}{{else}}NA{{end}}
+        {{- if .Values.secrets }}
         {{- range $key, $val := .Values.secrets }}
         - name: {{ $key | replace "-" "_" }}
           valueFrom:
@@ -67,7 +71,7 @@ spec:
         {{- if .Values.immutable }}
         - --immutable
         {{- end }}
-        {{ if .Values.vm_image_source }}- --image-source={{ .Values.vm_image_source }}{{ end }}
+        
         {{- if .Values.vm_image_always_pull }}
         - --image-always-pull
         {{- end }}
