@@ -1,11 +1,16 @@
 #!/bin/bash
 #
-
 MONITOR_SOCKET="/run/qemu-monitor"
 
 if [ -e "${MONITOR_SOCKET}" ]; then
 	echo "Simulating power-button press: "
 	echo system_powerdown | socat - UNIX-CONNECT:${MONITOR_SOCKET} 
+
+	pid=$(pidof qemu-system-x86_64)
+	while kill -0 "$pid"; do
+		echo "Waiting for qemu to finish..."
+		sleep 1
+	done
 else
 	echo "Monitor socket does not exist."
 fi
