@@ -9,7 +9,7 @@ ram: 2048
 disks: 
 - 20G
 immutable: False
-vm_image_source: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+#vm_image_source: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
 vm_image_always_pull: False
 vm_claim_size: 20G
 
