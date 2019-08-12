@@ -39,15 +39,15 @@ passthrough_first_nic: True
 #    ssh_pwauth: True
 
 # Secrets are marshalled through the pod environment, so dashes will be replaced with underscores
-#secrets:
-#    key: value
-#    new_key: value2
+secrets:
+    key: value
+    new_key: value2
 # vnc_port: 5900
 
 
 # Should userdata or secrets cause the image to redeploy?
 userdata_redeploy: False
-secrets_redeploy: False
+secrets_redeploy: True
 
 # qemu-version
 image_tag: latest

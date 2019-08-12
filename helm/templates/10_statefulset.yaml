@@ -53,7 +53,7 @@ spec:
         - name: USERDATA_SHA
           value: {{ if and .Values.userdata_redeploy .Values.userdata }}{{ .Values.userdata | sha256sum }}{{else}}NA{{end}}
         - name: SECRET_SHA
-          value: {{ if and .Values.secrets_redeploy .Values.secrets }}{{ .Values.secrets | sha256sum }}{{else}}NA{{end}}
+          value: {{ if and .Values.secrets_redeploy .Values.secrets }}{{ .Values.secrets | toString | sha256sum }}{{else}}NA{{end}}
         {{- if .Values.secrets }}
         {{- range $key, $val := .Values.secrets }}
         - name: {{ $key | replace "-" "_" }}
