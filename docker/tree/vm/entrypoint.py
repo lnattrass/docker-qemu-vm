@@ -146,7 +146,7 @@ class QemuDisk(QemuConfig):
 
   def _create_disk(self):
     log.info(f"Create disk {self.path}: {self.size}")
-    exec(['qemu-img', 'create', '-f', 'qcow2', '-o', 'cluster-size=2M,preallocate=falloc', self.path, f"{self.size}"])
+    exec(['qemu-img', 'create', '-f', 'qcow2', '-o', 'cluster-size=2M', self.path, f"{self.size}"])
 
   def _resize_disk(self):
     log.info(f"Checking disk size: {self.path}")
@@ -583,7 +583,7 @@ def _pull_disk_image(image_source, image_dest):
 
   log.info("Converting the disk to qcow2: ")
   # Convert the image to qcow2 (cluster-size 2M)
-  exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M,preallocate=falloc" f"{image_dest}.tmp", image_dest])
+  exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M" f"{image_dest}.tmp", image_dest])
 
   # Delete the temporary image:
   os.remove(f"{image_dest}.tmp")
