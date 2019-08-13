@@ -46,7 +46,7 @@ class QemuStandardOpts(QemuConfig):
     '-device', 'virtio-serial',
     '-device', 'virtserialport,chardev=qga0,name=org.qemu.guest_agent.0',
     '-device', 'virtio-balloon',
-    '-device', 'virtio-rng-pci,max-bytes=1024,period=1000',
+    '-device', 'virtio-rng-pci,max-bytes=1024,period=1000'
     
   ]
 
@@ -173,7 +173,7 @@ class QemuDisk(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-drive', f"file={self.path},if=virtio,snapshot={self.immutable}"
+      '-drive', f"file={self.path},if=virtio,snapshot={self.immutable},aio=native,cache=none"
     ]
 
 class QemuDiskManager(QemuConfig):
