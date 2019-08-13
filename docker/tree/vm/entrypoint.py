@@ -110,10 +110,11 @@ class QemuStandardOpts(QemuConfig):
 
 
 class QemuDisk(QemuConfig):
-  def __init__(self, path, size, immutable=False):
+  def __init__(self, path, size, index, immutable=False):
     self.path = path
     self.size = size
     self.immutable = immutable
+    self.disk_index = index
   
   @property
   def immutable(self):
@@ -145,7 +146,7 @@ class QemuDisk(QemuConfig):
 
   def _create_disk(self):
     log.info(f"Create disk {self.path}: {self.size}")
-    exec(['qemu-img', 'create', '-f', 'qcow2', self.path, f"{self.size}"])
+    exec(['qemu-img', 'create', '-f', 'qcow2', '-o', 'cluster-size=2M,preallocate=falloc', self.path, f"{self.size}"])
 
   def _resize_disk(self):
     log.info(f"Checking disk size: {self.path}")
@@ -173,7 +174,9 @@ class QemuDisk(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-drive', f"file={self.path},if=virtio,snapshot={self.immutable},aio=native,cache=none"
+      '-object', f'iothread,id=io{self.disk_index}',
+      '-device', f'virtio-blk-pci,drive=disk{self.disk_index},iothread=io{self.disk_index}',
+      '-drive', f"file={self.path},if=virtio,snapshot={self.immutable},cache=none,id=disk{self.disk_index},aio=native"
     ]
 
 class QemuDiskManager(QemuConfig):
@@ -187,7 +190,7 @@ class QemuDiskManager(QemuConfig):
   
   def add_disk(self, size):
     disk_path = os.path.join(self.disk_root, f"disk{len(self.disks)}.qcow2")
-    disk = QemuDisk(path=disk_path, size=size, immutable=self.immutable)
+    disk = QemuDisk(path=disk_path, size=size, index=len(self.disks), immutable=self.immutable)
     log.info(f"Adding disk '{disk_path}' size={size}'")
     self.disks.append(disk)
 
@@ -579,8 +582,8 @@ def _pull_disk_image(image_source, image_dest):
     raise ValueError(f"Unsupported scheme ({image_source_path.scheme}) for image_source: {image_source}")
 
   log.info("Converting the disk to qcow2: ")
-  # Convert the image to qcow2:
-  exec(["qemu-img", "convert", "-O", "qcow2", f"{image_dest}.tmp", image_dest])
+  # Convert the image to qcow2 (cluster-size 2M)
+  exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M,preallocate=falloc" f"{image_dest}.tmp", image_dest])
 
   # Delete the temporary image:
   os.remove(f"{image_dest}.tmp")
