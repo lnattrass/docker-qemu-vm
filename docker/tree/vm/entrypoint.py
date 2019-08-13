@@ -176,7 +176,7 @@ class QemuDisk(QemuConfig):
     return [
       '-object', f'iothread,id=io{self.disk_index}',
       '-device', f'virtio-blk-pci,drive=disk{self.disk_index},iothread=io{self.disk_index}',
-      '-drive', f"file={self.path},if=virtio,snapshot={self.immutable},cache=none,id=disk{self.disk_index},aio=native"
+      '-drive', f"file={self.path},if=none,snapshot={self.immutable},cache=none,id=disk{self.disk_index},aio=native"
     ]
 
 class QemuDiskManager(QemuConfig):
