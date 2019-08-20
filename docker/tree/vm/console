@@ -3,10 +3,20 @@
 
 SERIAL_SOCKET="/run/qemu-serial0"
 
-if [ -e "${SERIAL_SOCKET}" ]; then
-  echo "Press CTRL+O to exit the console"
-  sleep 1
-	socat file:`tty`,raw,echo=0,escape=0x0f UNIX-CONNECT:${SERIAL_SOCKET}
-else
-	echo "Serial socket does not exist"
+if [ ! -e "${SERIAL_SOCKET}" ]; then
+  # Socket does not exist
+  if [ "$1" == "-w" ]; then 
+    echo "Waiting for socket..."
+    while [ ! -e "${SERIAL_SOCKET}" ]; do
+      sleep 0.5
+    done
+  else
+	  echo "Serial socket does not exist"
+    exit 1
+  fi
 fi
+
+echo "Press CTRL+O to exit the console"
+sleep 1
+socat file:`tty`,raw,echo=0,escape=0x0f UNIX-CONNECT:${SERIAL_SOCKET}
+exit 0
