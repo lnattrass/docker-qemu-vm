@@ -624,7 +624,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 
 @click.command()
-@click.option('--cpu', default=2, help="CPU's assigned to the VM")
+@click.option('--cpu', default="2", type=str, help="CPU's assigned to the VM")
 @click.option('--ram', default=2048, help="RAM assigned to the VM (in MB)")
 @click.option('--nic','nics', multiple=True, help="Network Cards to Bridge to the VM (can be used multiple times)", default=['eth0'])
 @click.option('--disk', 'disk_sizes', multiple=True, help="Disks to provide to the VM (the first must be the boot disk)", default=['20G'])
