@@ -36,9 +36,16 @@ class QemuConfig(object):
     return []
 
 class QemuStandardOpts(QemuConfig):
+  qemu_executable = 'qemu-system-x86_64'
+  
   static_opts = [
-    'qemu-system-x86_64',
-    '-machine', 'q35',
+    '-machine', 'q35,dump-guest-core=off,usb=off',
+    '-realtime', 'mlock=off',
+    '-no-user-config', '-nodefaults',
+    '-global', 'kvm-pit.lost_tick_policy=delay',
+    '-global', 'ICH9-LPC.disable_s3=1',
+    '-global', 'ICH9-LPC.disable_s4=1',
+    '-no-hpet',
     '-monitor', 'unix:/run/qemu-monitor,server,nowait',
     '-serial', 'unix:/run/qemu-serial0,server,nowait',
     '-serial', 'stdio',
@@ -47,12 +54,14 @@ class QemuStandardOpts(QemuConfig):
     '-device', 'virtserialport,chardev=qga0,name=org.qemu.guest_agent.0',
     '-device', 'virtio-balloon',
     '-device', 'virtio-rng-pci,max-bytes=1024,period=1000'
-    
   ]
 
-  def __init__(self, cpu=2, ram=2048):
+  def __init__(self, cpu=2, ram=2048, rtc_mode='utc'):
+
     self.cpu = cpu
     self.ram = ram
+    self.guest_name = socket.gethostname()
+    self.rtc_mode = rtc_mode
 
     self._uuid = None
     self._default_uuid = None
@@ -102,6 +111,9 @@ class QemuStandardOpts(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [ 
+      self.qemu_executable,
+      "-name", f"guest={self.guest_name},debug-threads=on",
+      '-rtc', f"base={self.rtc_mode},driftfix=slew",
       *self.static_opts,
       "-smp",   f"{self.cpu}",
       "-m",     f"{self.ram}m",
@@ -655,7 +667,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
+def run(machine, cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
