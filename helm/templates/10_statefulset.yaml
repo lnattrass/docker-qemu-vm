@@ -108,5 +108,4 @@ spec:
             add: ["NET_ADMIN"]
     
         resources:
-          requests:
-            cpu: 100m
+{{ toYaml .Values.resources | indent 10 }}

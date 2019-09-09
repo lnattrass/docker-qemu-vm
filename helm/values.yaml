@@ -53,3 +53,11 @@ secrets_redeploy: True
 image_tag: latest
 image_repository: lnattrass/docker-qemu-vm
 image_pull_policy: Always
+
+resources:
+  requests:
+    cpu: 100m
+#    memory: 2048Mi
+#  limits:
+#    cpu: 100m
+#    memory: 2148Mi
