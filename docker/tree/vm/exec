@@ -3,10 +3,114 @@
 
 QGA_SOCKET="/run/qemu-qga"
 
+CMD=shift 
+ARGS=( "$@" )
+
+
+echo '{"execute": "guest-exec", "arguments": {"path": "$CMD", "arg": "$argArray", "capture-output": true }}' | jq --args $@
+exit 0
+
 if [ -e "${QGA_SOCKET}" ]; then
-  echo "Press CTRL+[ to exit the console"
+  echo "Press CTRL[ to exit the console"
+  
   sleep 1
-	echo "{'| socat - UNIX-CONNECT:${QGA_SOCKET}
 else
 	echo "Serial socket does not exist"
 fi
+
+#
+#TIMEOUT=10
+# QGA_SOCKET=/run/qemu-qga
+# CMD=/bin/bash
+# shift
+# ARGS=("$@")
+# EXEC_CMD='{"execute": "guest-exec", "arguments": {"path": "CMD_HERE", "arg": [], "capture-output": true }}'
+# STAT_CMD='{"execute": "guest-exec-status", "arguments": {"pid": "1234" }}'
+#+ jq -r '.arguments.arg=$ARGS.positional | .arguments.path=$CMD' --arg CMD /bin/bash --args -- -c 'echo Hiiii'
+#+ echo '{"execute": "guest-exec", "arguments": {"path": "CMD_HERE", "arg": [], "capture-output": true }}'
+# COMPILED='{
+#  "execute": "guest-exec",
+#  "arguments": {
+#    "path": "/bin/bash",
+#    "arg": [
+#      "-c",
+#      "echo Hiiii"
+#    ],
+#    "capture-output": true
+#  }
+#}'
+# echo 'Sending: {
+#  "execute": "guest-exec",
+#  "arguments": {
+#    "path": "/bin/bash",
+#    "arg": [
+#      "-c",
+#      "echo Hiiii"
+#    ],
+#    "capture-output": true
+#  }
+#}'
+#Sending: {
+#  "execute": "guest-exec",
+#  "arguments": {
+#    "path": "/bin/bash",
+#    "arg": [
+#      "-c",
+#      "echo Hiiii"
+#    ],
+#    "capture-output": true
+#  }
+#}
+#+ echo '{' '"execute":' '"guest-exec",' '"arguments":' '{' '"path":' '"/bin/bash",' '"arg":' '[' '"-c",' '"echo' 'Hiiii"' '],' '"capture-output":' true '}' '}'
+#+ socat - UNIX-CONNECT:/run/qemu-qga
+# RESPONSE='{"error": {"class": "GenericError", "desc": "Invalid parameter type for '\''pid'\'', expected: integer"}}'
+# echo 'Response: {"error": {"class": "GenericError", "desc": "Invalid parameter type for '\''pid'\'', expected: integer"}}'
+#Response: {"error": {"class": "GenericError", "desc": "Invalid parameter type for 'pid', expected: integer"}}
+#+ jq -r .return.pid
+#+ echo '{"error":' '{"class":' '"GenericError",' '"desc":' '"Invalid' parameter type for ''\''pid'\'',' expected: 'integer"}}'
+# EXEC_PID=null
+# echo 'Return PID = null'
+#Return PID = null
+#+ jq --argjson PID null '.arguments.pid=$PID'
+#+ echo '{"execute":' '"guest-exec-status",' '"arguments":' '{"pid":' '"1234"' '}}'
+# COMPILED_STAT='{
+#  "execute": "guest-exec-status",
+#  "arguments": {
+#    "pid": null
+#  }
+#}'
+# echo 'Compiled stat-cmd: {
+#  "execute": "guest-exec-status",
+#  "arguments": {
+#    "pid": null
+#  }
+#}'
+#Compiled stat-cmd: {
+#  "execute": "guest-exec-status",
+#  "arguments": {
+#    "pid": null
+#  }
+#}
+# true
+#+ socat - UNIX-CONNECT:/run/qemu-qga
+#+ echo '{' '"execute":' '"guest-exec-status",' '"arguments":' '{' '"pid":' null '}' '}'
+# CHECK_STAT='{"return": {"pid": 8413}}'
+# echo 'Check Stat returns: {"return": {"pid": 8413}}'
+#Check Stat returns: {"return": {"pid": 8413}}
+# sleep 2
+# true
+#+ ++ echo '{' '"execute":' '"guest-exec-status",' '"arguments":' '{' '"pid":' null '}' '}'
+#socat - UNIX-CONNECT:/run/qemu-qga
+# CHECK_STAT=
+# echo 'Check Stat returns: '
+#Check Stat returns:
+# sleep 2
+# true
+#+ echo '{' '"execute":' '"guest-exec-status",' '"arguments":' '{' '"pid":' null '}' '}'
+#+ socat - UNIX-CONNECT:/run/qemu-qga
+# CHECK_STAT='{"error": {"class": "GenericError", "desc": "Invalid parameter type for '\''pid'\'', expected: integer"}}'
+# echo 'Check Stat returns: {"error": {"class": "GenericError", "desc": "Invalid parameter type for '\''pid'\'', expected: integer"}}'
+#Check Stat returns: {"error": {"class": "GenericError", "desc": "Invalid parameter type for 'pid', expected: integer"}}
+# sleep 2
+#^C
+#Command terminated
