@@ -14,7 +14,7 @@ spec:
   - metadata:
       name: {{ .Release.Name }}-pvc
     spec:
-      storageClassName: cephfs
+      storageClassName: {{ .Values.storage_class }}
       accessModes:
         - ReadWriteOnce
       resources:
