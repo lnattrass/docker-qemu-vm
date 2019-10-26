@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+#
+import os
+import sys
+import json
+import time
+import socket
+import base64
+
+TIMEOUT=30
+socket_path = "/run/qemu-qga"
+verbose = False
+
+def _info(msg):
+    if verbose:
+        sys.stderr.write("i: ")
+        sys.stderr.write(msg)
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+
+def _guest_exec(sock, cmd):
+    path = cmd.pop(0)
+    req = {
+        "execute": "guest-exec",
+        "arguments": {
+            "path": path,
+            "arg": cmd,
+            "capture-output": True
+        }
+    }
+    _info(json.dumps(req, indent=4))
+    json.dump(req, sock)
+    resp = json.loads(sock.readline())
+    try:
+        return resp['return']['pid']
+    except KeyError:
+        sys.stderr.write("Failed to execute command, response: \n")
+        sys.stderr.write(json.dumps(resp, indent=4))
+        sys.stderr.write("\n")
+        raise
+
+
+
+def _guest_exec_status(sock, pid):
+    req = {
+        "execute": "guest-exec-status",
+        "arguments": {
+            "pid": pid
+        }
+    }
+    _info(json.dumps(req, indent=4))
+    json.dump(req, sock)
+    resp = json.loads(sock.readline())
+    _info(json.dumps(resp, indent=4))
+    return resp
+
+def main(args):
+    #
+    if not os.path.exists(socket_path):
+        _info("Socket path does not exist.")
+        sys.exit(122)
+
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+        sock.connect(socket_path)
+        sockf = sock.makefile(mode="rw", buffering=2)
+        # Execute the command, returning a PID
+        pid = _guest_exec(sockf, args)
+        # Set a timeout for command execution
+        expired = time.time() + TIMEOUT
+
+        # Get the satus of the command
+        status = _guest_exec_status(sockf, pid)
+        while not status['return']['exited'] and time.time() <= expired:
+            _info("Waiting for process to complete.\n")
+            time.sleep(0.2)
+            status = _guest_exec_status(sockf, pid)
+
+        if status['return']['exited']:
+            raw = base64.b64decode(status['return']['out-data'])
+            print(raw.decode())
+            sys.exit(status['return']['exitcode'])
+        else:
+            _info("Timeout reached, exiting with code 121!")
+            sys.exit(121)
+
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    if args[0] == '-v':
+        verbose=True
+        args.pop(0)
+    main(args)
