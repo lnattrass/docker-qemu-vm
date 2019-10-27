@@ -19,8 +19,8 @@ jobs:
           command: |
             echo "Helm Package"
             helm init --client-only
-            helm lint ./chart/
+            helm lint ./helm/qemu-vm
             mkdir -p /github/home/pkg
-            helm package ./chart/ --destination /github/home/pkg/
+            helm package ./helm/qemu-vm/ --destination /github/home/pkg/
 
 
