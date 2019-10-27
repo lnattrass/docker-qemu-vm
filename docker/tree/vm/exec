@@ -80,7 +80,7 @@ def main(args):
                 raw = base64.b64decode(status['return']['out-data'])
                 print(raw.decode())
             else:
-                sys.stderr.write("(no output returned from command)")
+                sys.stderr.write("(no output returned from command)\n")
             sys.exit(status['return']['exitcode'])
         else:
             _info("Timeout reached, exiting with code 121!")
