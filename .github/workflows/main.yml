@@ -24,17 +24,13 @@ jobs:
             mkdir -p /github/home/pkg
             helm package ./helm/qemu-vm/ --destination /github/home/pkg/
 
-            set -x
-            git config user.email ${GITHUB_ACTOR}@users.noreply.github.com
-            git config user.name ${GITHUB_ACTOR}
-            git remote set-url origin ${GITHUB_REPOSITORY}
-
             git checkout gh-pages
             mv /github/home/pkg/*.tgz .
             helm repo index . --url https://lnattrass.github.io/docker-qemu-vm/
-            git add .
-            git commit -m 'Publish latest helm chart'
-            git push origin gh-pages
 
-
-
+      - name: Release gh-pages
+        uses: peaceiris/actions-gh-pages@v2.5.0
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: .
