@@ -10,19 +10,19 @@ The helm charts provided assume you have persistent storage working within your 
 Currently the requested PV size is not functional.
 
 ```bash
-$ git clone https://github.com/lnattrass/docker-qemu-vm.git && cd docker-qemu-vm
-$ cd docker-qemu-vm
+$ helm repo add qemu-vm https://lnattrass.github.io/docker-qemu-vm/
 $ cat <<EOF > ./userdata
 #cloud-config
 password: ubuntu
 chpasswd: { expire: False }
 EOF
-$ helm template --name=test --set=cpu=1 --set=replicas=2 --set-file userdata=./userdata helm |  kubectl apply -f -
+$ helm 
+$ helm install --name=test --set=cpu=1 --set=replicas=2 --set-file userdata=./userdata
 $ kubectl get pods
 NAME                           READY   STATUS              RESTARTS   AGE
 test-vm-0                   0/1     ContainerCreating   0          3s
 $ kubectl logs -f test-vm-0 
-$ kubectl exec -it test-vm-0 /vm/console
+$ kubectl exec -it test-vm-0 /vm/console 
 Press CTRL+O to exit the console
 
 .. you should see ubuntu-18.04 booting ..
@@ -38,7 +38,7 @@ $
 ```
 
 ## Options
-The following options are available from the entrypoint:
+The following options are available from the entrypoint for the docker image:
 ```bash
 Usage: entrypoint.py [OPTIONS]
 

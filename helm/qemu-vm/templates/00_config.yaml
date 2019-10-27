@@ -3,9 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-config
-  {{- if .Values.namespace }}
-  namespace: {{ .Values.namespace }}
-  {{- end }}
+  namespace: {{ .Release.Namespace }}
 data:
   user-data: |
     {{- .Values.userdata | nindent 4}}
