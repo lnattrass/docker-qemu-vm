@@ -33,7 +33,7 @@ jobs:
             helm repo index . --url https://lnattrass.github.io/docker-qemu-vm/
 
       - name: Release gh-pages
-        uses: docker://peaceiris/actions-gh-pages:v2.5.0
+        uses: docker://peaceiris/gh-pages:v2.5.0
         env:
           ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           PUBLISH_BRANCH: gh-pages
