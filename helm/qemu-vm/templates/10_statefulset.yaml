@@ -33,9 +33,9 @@ spec:
         app.kubernetes.io/name: {{ .Release.Name }}-vm
     spec:
       restartPolicy: {{ .Values.restartPolicy }}
-      {{- if .Values.node_selector }}
+      {{- if .Values.nodeSelector }}
       nodeSelector:
-        {{ .Values.node_selector | toYaml | indent 8 | trim }}
+        {{ .Values.nodeSelector | toYaml | indent 8 | trim }}
       {{- end }}
       {{- if .Values.userdata }}
       volumes:
