@@ -18,9 +18,8 @@ jobs:
           kustomize: 3.2.3
           helm: 2.14.3
           command: |
-            echo "Helm Package"
-
-            yq w -i ./helm/qemu-vm/Chart.yaml version ${GITHUB_REF:10}
+            echo "Sync tag to helm version"
+            yq w -i ./helm/qemu-vm/Chart.yaml version ${GITHUB_REF:11}
             yq w -i ./helm/qemu-vm/values.yaml image_tag ${GITHUB_REF:10}
             
             helm init --client-only
