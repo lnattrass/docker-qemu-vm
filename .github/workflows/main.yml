@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+
       - name: helm package
         uses: stefanprodan/kube-tools@v1
         with:
@@ -22,5 +23,7 @@ jobs:
             helm lint ./helm/qemu-vm
             mkdir -p /github/home/pkg
             helm package ./helm/qemu-vm/ --destination /github/home/pkg/
+            git version
+
 
 
