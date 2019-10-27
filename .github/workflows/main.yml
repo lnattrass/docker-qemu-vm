@@ -28,7 +28,7 @@ jobs:
             mkdir -p /github/home/pkg
             helm package ./helm/qemu-vm/ --destination /github/home/pkg/
 
-            git checkout gh-pages
+            git checkout --force gh-pages
             mv /github/home/pkg/*.tgz .
             helm repo index . --url https://lnattrass.github.io/docker-qemu-vm/
 
