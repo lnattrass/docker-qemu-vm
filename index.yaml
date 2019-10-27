@@ -2,7 +2,25 @@ apiVersion: v1
 entries:
   qemu-vm:
   - apiVersion: v1
-    created: "2019-10-27T13:42:58.886347-04:00"
+    created: "2019-10-27T17:57:01.596605323Z"
+    description: Virtual Machine Template
+    digest: 5879aae457a8689741f6d3573e4783cc866d4e2981d43d7cbc952e1a9341682a
+    home: https://gitlab.com/lnattrass/docker-qemu-vm
+    keywords:
+    - qemu
+    - virtual-machine
+    - kvm
+    maintainers:
+    - email: lnattrass@gitlab.com
+      name: lnattrass
+    name: qemu-vm
+    sources:
+    - https://gitlab.com/lnattrass/docker-qemu-vm
+    urls:
+    - https://lnattrass.github.io/docker-qemu-vm/qemu-vm-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v1
+    created: "2019-10-27T17:57:01.596867023Z"
     description: Virtual Machine Template
     digest: 27731212e0bf244fe774681e75355b2a5da6e0934cd11c60cd7987e42d005866
     home: https://gitlab.com/lnattrass/docker-qemu-vm
@@ -19,4 +37,4 @@ entries:
     urls:
     - https://lnattrass.github.io/docker-qemu-vm/qemu-vm-v0.1.0.tgz
     version: v0.1.0
-generated: "2019-10-27T13:42:58.883245-04:00"
+generated: "2019-10-27T17:57:01.596187124Z"
