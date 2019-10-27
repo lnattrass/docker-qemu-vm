@@ -2,11 +2,11 @@ name: publish-helm
 
 on:
   push:
-    branches: 
-      - master
+    tags:
+    - v*
 
 jobs:
-  release-helm:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -19,6 +19,10 @@ jobs:
           helm: 2.14.3
           command: |
             echo "Helm Package"
+
+            yq w -i ./helm/qemu-vm/Chart.yaml version "$GITHUB_REF"
+            yq w -i ./helm/qemu-vm/values.yaml image_tag "$GITHUB_REF"
+            
             helm init --client-only
             helm lint ./helm/qemu-vm
             mkdir -p /github/home/pkg
