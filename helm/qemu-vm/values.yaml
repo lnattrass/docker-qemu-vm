@@ -20,7 +20,7 @@ restartPolicy: Always
 passthrough_first_nic: True
 
 # node_selector
-#node_selector:
+#nodeSelector:
 #    kubernetes.io/hostname: node0
 
 #networks:
