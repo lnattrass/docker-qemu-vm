@@ -76,8 +76,11 @@ def main(args):
             status = _guest_exec_status(sockf, pid)
 
         if status['return']['exited']:
-            raw = base64.b64decode(status['return']['out-data'])
-            print(raw.decode())
+            if 'out-data' in status['return']:
+                raw = base64.b64decode(status['return']['out-data'])
+                print(raw.decode())
+            else:
+                sys.stderr.write("(no output returned from command)")
             sys.exit(status['return']['exitcode'])
         else:
             _info("Timeout reached, exiting with code 121!")
