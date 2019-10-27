@@ -72,3 +72,5 @@ readinessProbe: {}
 #  failureTheshold: 3
 
 livenessProbe: {}
+
+startupProbe: {}
