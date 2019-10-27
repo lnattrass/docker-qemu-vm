@@ -10,7 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Package-helm
-        uses: stefanprodan/gh-actions/helm-gh-pages@master
+      - name: helm package
+        uses: stefanprodan/kube-tools@v1
         with:
-          args: ./chart "https://lnattrass.github.io/docker-qemu-vm/"
+          kubectl: 1.16.2
+          kustomize: 3.2.3
+          helm: 2.14.3
+          command: |
+            echo "Helm Package"
+            helm init --client-only
+            helm lint ./chart/
+            mkdir -p /github/home/pkg
+            helm package ./chart/ --destination /github/home/pkg/
+
+
