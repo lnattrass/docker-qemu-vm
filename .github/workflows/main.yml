@@ -20,8 +20,8 @@ jobs:
           command: |
             echo "Helm Package"
 
-            yq w -i ./helm/qemu-vm/Chart.yaml version "$GITHUB_REF"
-            yq w -i ./helm/qemu-vm/values.yaml image_tag "$GITHUB_REF"
+            yq w -i ./helm/qemu-vm/Chart.yaml version ${GITHUB_REF:10}
+            yq w -i ./helm/qemu-vm/values.yaml image_tag ${GITHUB_REF:10}
             
             helm init --client-only
             helm lint ./helm/qemu-vm
