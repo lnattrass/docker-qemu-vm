@@ -69,7 +69,7 @@ spec:
         {{- if .Values.immutable }}
         - --immutable
         {{- end }}
-        
+        {{ if .Values.vm_image_source }}- --image-source={{ .Values.vm_image_source | quote }}{{ end }}
         {{- if .Values.vm_image_always_pull }}
         - --image-always-pull
         {{- end }}
