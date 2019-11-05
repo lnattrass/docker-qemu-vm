@@ -39,7 +39,6 @@ class QemuStandardOpts(QemuConfig):
   qemu_executable = 'qemu-system-x86_64'
   
   static_opts = [
-    '-machine', 'q35,dump-guest-core=off,usb=off',
     '-realtime', 'mlock=off',
     '-no-user-config', '-nodefaults',
     '-global', 'kvm-pit.lost_tick_policy=delay',
@@ -56,12 +55,12 @@ class QemuStandardOpts(QemuConfig):
     '-device', 'virtio-rng-pci,max-bytes=1024,period=1000'
   ]
 
-  def __init__(self, cpu=2, ram=2048, rtc_mode='utc'):
-
+  def __init__(self, cpu=2, ram=2048, rtc_mode='utc', machine='q35'):
     self.cpu = cpu
     self.ram = ram
     self.guest_name = socket.gethostname()
     self.rtc_mode = rtc_mode
+    self.machine = machine
 
     self._uuid = None
     self._default_uuid = None
@@ -114,6 +113,7 @@ class QemuStandardOpts(QemuConfig):
       self.qemu_executable,
       "-name", f"guest={self.guest_name},debug-threads=on",
       '-rtc', f"base={self.rtc_mode},driftfix=slew",
+      '-machine', f"{self.machine},dump-guest-core=off,usb=off",
       *self.static_opts,
       "-smp",   f"{self.cpu}",
       "-m",     f"{self.ram}m",
@@ -636,6 +636,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 
 @click.command()
+@click.option('--machine', default='q35', type=str, help="Machine type")
 @click.option('--cpu', default="2", type=str, help="CPU's assigned to the VM")
 @click.option('--ram', default=2048, help="RAM assigned to the VM (in MB)")
 @click.option('--nic','nics', multiple=True, help="Network Cards to Bridge to the VM (can be used multiple times)", default=['eth0'])
@@ -667,7 +668,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
+def run(machine, cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
@@ -679,7 +680,7 @@ def run(cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, im
   # Create the configuration object
   with PersistentConfig(config_path) as config:
     qemu_options = [
-      QemuStandardOpts(cpu=cpu, ram=ram),
+      QemuStandardOpts(cpu=cpu, ram=ram, machine=machine),
     ]
     
     # Add disks
