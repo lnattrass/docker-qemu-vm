@@ -11,6 +11,17 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Docker Login
+        uses: Azure/docker-login@v1
+        with:
+          username: lnattrass
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker build
+        run: |
+         docker build docker -t lnattrass/docker-qemu-vm:${GITHUB_REF:10}
+         docker push lnattrass/docker-qemu-vm:${GITHUB_REF:10}
+
       - name: helm package
         uses: stefanprodan/kube-tools@v1
         with:
