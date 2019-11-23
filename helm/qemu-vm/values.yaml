@@ -74,3 +74,5 @@ readinessProbe: {}
 livenessProbe: {}
 
 startupProbe: {}
+
+tolerations: {}

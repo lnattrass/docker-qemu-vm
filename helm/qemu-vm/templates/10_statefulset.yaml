@@ -37,6 +37,9 @@ spec:
       nodeSelector:
         {{ .Values.nodeSelector | toYaml | indent 8 | trim }}
       {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:  {{ .Values.tolerations | toYaml | nindent 8 }}
+      {{- end }}
       {{- if .Values.userdata }}
       volumes:
       - name: config
