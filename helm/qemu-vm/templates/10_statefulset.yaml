@@ -7,7 +7,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   serviceName: {{ .Release.Name }}-vm
-  replicas: {{ .Values.replicas }}
   volumeClaimTemplates:
   - metadata:
       name: {{ .Release.Name }}-pvc

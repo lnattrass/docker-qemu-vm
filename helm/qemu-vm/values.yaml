@@ -13,7 +13,6 @@ vm_claim_size: 20G
 storage_class: cephfs
 
 # Replicas/RestartPolicies
-replicas: 1
 restartPolicy: Always
 
 # Network configuration
