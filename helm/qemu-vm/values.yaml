@@ -13,6 +13,10 @@ vm_claim_size: 20G
 storage_class: cephfs
 
 # Replicas/RestartPolicies
+podManagementPolicy: Parallel
+updateStrategy: 
+  type: RollingUpdate
+
 restartPolicy: Always
 
 # Network configuration
