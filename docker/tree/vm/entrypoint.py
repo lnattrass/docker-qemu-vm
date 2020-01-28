@@ -174,6 +174,13 @@ class QemuDisk(QemuConfig):
     else:
       log.warning(f"Disk wanted size is less than actual size. Disks cannot be shrunk safely, resize cancelled.")  
 
+  def _convert_to_qcow(self):
+    log.info("Converting the disk to qcow2: ")
+    # Convert the image to qcow2 (cluster-size 2M)
+    exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M", self.path, f"{self.path}.tmp"])
+    os.remove(self.path)
+    os.rename(f"{self.path}.tmp", self.path)
+
   def prepare(self):
     log.info(f"Prepare disk: {self.path}")
 
@@ -182,19 +189,23 @@ class QemuDisk(QemuConfig):
       if self.always_pull:
         log.info(f"Disk{self.index} set to always_pull, pulling image:")
         _pull_disk_image(self.source, self.path)
+        self._convert_to_qcow()
+        self._resize_disk()
         return
       if not os.path.isfile(self.path):
         log.info(f"Disk{self.index} is missing, pulling from source:")
         _pull_disk_image(self.source, self.path)
-        return
 
     # Create disk if necessary
-    if not os.path.isfile(self.path):
+    elif not os.path.isfile(self.path):
       self._create_disk()
-    
-    # Check if disk needs resize
+
+    if not os.path.isfile(self.path):
+      raise FileNotFoundError("Source is set, but disk pull failed.")
+
+    # Check if disk needs resize/convert
+    self._convert_to_qcow()
     self._resize_disk()
-    return
 
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
@@ -625,18 +636,12 @@ def _pull_disk_image(image_source, image_dest):
   # Determine how to pull this image:
   image_source_path = urlparse(image_source)
   if image_source_path.scheme.lower() in ('s3', 's3s'):
-    _pull_disk_image_s3(image_source_path, f"{image_dest}.tmp")
+    _pull_disk_image_s3(image_source_path, image_dest)
   elif image_source_path.scheme.lower() in ('http', 'https'):
-    _pull_disk_image_http(image_source, f"{image_dest}.tmp")
+    _pull_disk_image_http(image_source, image_dest)
   else:
     raise ValueError(f"Unsupported scheme ({image_source_path.scheme}) for image_source: {image_source}")
 
-  log.info("Converting the disk to qcow2: ")
-  # Convert the image to qcow2 (cluster-size 2M)
-  exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M", f"{image_dest}.tmp", image_dest])
-
-  # Delete the temporary image:
-  os.remove(f"{image_dest}.tmp")
 
 def _pull_disk_image_http(image_source, image_dest):
   urllib.request.urlretrieve(image_source, image_dest)
