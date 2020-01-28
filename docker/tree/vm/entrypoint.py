@@ -243,7 +243,7 @@ class QemuCDROM(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-drive', f"file={self.path},format=raw,if=scsi,media=cdrom,readonly"
+      '-drive', f"file={self.path},format=raw,media=cdrom,readonly"
     ]
 
 class QemuDiskManager(QemuConfig):
@@ -578,7 +578,7 @@ class QemuConfigDrive(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-drive', f"file={self.path},format=raw,if=scsi,media=cdrom,readonly"
+      '-drive', f"file={self.path},format=raw,media=cdrom,readonly"
     ]
 
 class PersistentConfig():
