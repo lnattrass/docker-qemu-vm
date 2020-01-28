@@ -5,6 +5,8 @@ ram: 2048
 # Disks, images, storage, etc:
 disks: 
 - 20G,source=https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img,immutable,always_pull
+cdroms:
+- source=https://boot.netboot.xyz/ipxe/netboot.xyz.iso
 vm_claim_size: 20G
 
 storage_class: cephfs
