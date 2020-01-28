@@ -244,9 +244,7 @@ class QemuCDROM(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-object', f'iothread,id=io{self.index}',
-      '-device', f'virtio-blk-pci,drive=disk{self.index},iothread=io{self.index}',
-      '-drive', f"file={self.path},if=scsi,media=cdrom,cache=none,id=disk{self.index},aio=native"
+      '-drive', f"file={self.path},format=raw,id=scsi,media=cdrom,readonly"
     ]
 
 class QemuDiskManager(QemuConfig):
