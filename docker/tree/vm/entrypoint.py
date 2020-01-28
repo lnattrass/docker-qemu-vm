@@ -678,11 +678,8 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 @click.option('--cpu', default="2", type=str, help="CPU's assigned to the VM")
 @click.option('--ram', default=2048, help="RAM assigned to the VM (in MB)")
 @click.option('--nic','nics', multiple=True, help="Network Cards to Bridge to the VM (can be used multiple times)", default=['eth0'])
-@click.option('--disk', 'disks', multiple=True, help="Disks to provide to the VM", default=['20G'])
-@click.option('--cdrom', 'cdroms', multiple=True, help="ISO's to provide to the VM (--cdrom source=x,always_pull)")
-@click.option('--image-source', type=str, help="Image to download as the root disk")
-@click.option('--image-always-pull', type=bool, is_flag=True, default=False, help="Always download the root disk image?")
-@click.option('--immutable', type=bool, is_flag=True, default=False, help="When this machine is shutdown, discard all changes to the disks.")
+@click.option('--disk', 'disks', multiple=True, help="Disks to provide to the VM (--disk size=20G,source=src.com/x,immutable,always_pull)", default=['size=20G'])
+@click.option('--cdrom', 'cdroms', multiple=True, help="ISO's to provide to the VM (--cdrom source=src.com/x,always_pull)")
 @click.option('--passthrough-first-nic', type=bool, is_flag=True, default=False, help="Passthrough the first NIC's IP address from the command line.")
 @click.option('--vnc-port', type=int, default=None, help="VNC Port to use for remote console (this will be redirected in the container)")
 
@@ -707,7 +704,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(machine, cpu, ram, nics, disks, cdroms, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
+def run(machine, cpu, ram, nics, disks, cdroms, vm_data, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
