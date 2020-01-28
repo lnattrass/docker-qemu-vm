@@ -39,7 +39,7 @@ class QemuStandardOpts(QemuConfig):
   qemu_executable = 'qemu-system-x86_64'
   
   static_opts = [
-    '-realtime', 'mlock=off',
+    '-overcommit', 'mem-lock=off',
     '-no-user-config', '-nodefaults',
     '-global', 'kvm-pit.lost_tick_policy=delay',
     '-global', 'ICH9-LPC.disable_s3=1',
@@ -213,7 +213,7 @@ class QemuDisk(QemuConfig):
     return [
       '-object', f'iothread,id=io{self.index}',
       '-device', f'virtio-blk-pci,drive=disk{self.index},iothread=io{self.index}',
-      '-drive', f"file={self.path},if=none,snapshot={self.immutable},cache=none,id=disk{self.index},aio=native"
+      '-drive', f"file={self.path},if=scsi,snapshot={self.immutable},cache=none,id=disk{self.index},aio=native"
     ]
 
 class QemuCDROM(QemuConfig):
@@ -246,7 +246,7 @@ class QemuCDROM(QemuConfig):
     return [
       '-object', f'iothread,id=io{self.index}',
       '-device', f'virtio-blk-pci,drive=disk{self.index},iothread=io{self.index}',
-      '-drive', f"file={self.path},if=none,media=cdrom,cache=none,id=disk{self.index},aio=native"
+      '-drive', f"file={self.path},if=scsi,media=cdrom,cache=none,id=disk{self.index},aio=native"
     ]
 
 class QemuDiskManager(QemuConfig):
