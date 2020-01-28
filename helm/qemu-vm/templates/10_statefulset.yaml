@@ -69,13 +69,6 @@ spec:
         {{- range .Values.disks }}
         - --disk={{ . }}
         {{- end }}
-        {{- if .Values.immutable }}
-        - --immutable
-        {{- end }}
-        {{ if .Values.vm_image_source }}- --image-source={{ .Values.vm_image_source | quote }}{{ end }}
-        {{- if .Values.vm_image_always_pull }}
-        - --image-always-pull
-        {{- end }}
         {{- if .Values.passthrough_first_nic }}
         - --passthrough-first-nic
         - --nic=eth0
@@ -89,7 +82,6 @@ spec:
         - --instance-secret-key={{ $key | replace "-" "_" }}
         {{- end }}
         {{- end }}
-        
         volumeMounts:
         - name: {{ .Release.Name }}-pvc
           mountPath: /vm/data

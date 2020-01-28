@@ -4,10 +4,7 @@ ram: 2048
 
 # Disks, images, storage, etc:
 disks: 
-- 20G
-immutable: False
-#vm_image_source: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
-vm_image_always_pull: False
+- 20G,source=https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img,immutable,always_pull
 vm_claim_size: 20G
 
 storage_class: cephfs
@@ -16,7 +13,6 @@ storage_class: cephfs
 podManagementPolicy: Parallel
 updateStrategy: 
   type: RollingUpdate
-
 restartPolicy: Always
 
 # Network configuration
@@ -39,6 +35,7 @@ passthrough_first_nic: True
 #    ssh_pwauth: True
 
 # Secrets are marshalled through the pod environment, so dashes will be replaced with underscores
+# They end up in the instance meta-data
 secrets: {}
   #  key: value
   #  new_key: value2
