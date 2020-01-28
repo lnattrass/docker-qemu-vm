@@ -90,7 +90,7 @@ class QemuStandardOpts(QemuConfig):
   def kvm(self):
     if self._kvm:
       return [
-        '-enable-kvm',
+        '-accel kvm,tcg',
         '-cpu', 'host'        
       ]
     else:
@@ -212,14 +212,13 @@ class QemuDisk(QemuConfig):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
       '-object', f'iothread,id=io{self.index}',
-      '-device', f'virtio-blk-pci,drive=disk{self.index},iothread=io{self.index}',
+      '-device', f'virtio-scsi-pci,drive=disk{self.index},iothread=io{self.index}',
       '-drive', f"file={self.path},if=scsi,snapshot={self.immutable},cache=none,id=disk{self.index},aio=native"
     ]
 
 class QemuCDROM(QemuConfig):
-  def __init__(self, path, index, source=None, always_pull=False):
+  def __init__(self, path, source=None, always_pull=False):
     self.path = path
-    self.index = index
     self.source = source
     self.always_pull = always_pull
   
@@ -229,11 +228,11 @@ class QemuCDROM(QemuConfig):
     # Check if image source exists
     if self.source:
       if self.always_pull:
-        log.info(f"Disk{self.index} set to always_pull, pulling image:")
+        log.info(f"Disk set to always_pull, pulling image:")
         _pull_disk_image(self.source, self.path)
         return
       if not os.path.isfile(self.path):
-        log.info(f"Disk{self.index} is missing, pulling from source:")
+        log.info(f"Disk is missing, pulling from source:")
         _pull_disk_image(self.source, self.path)
         return
 
@@ -244,7 +243,7 @@ class QemuCDROM(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-drive', f"file={self.path},format=raw,id=scsi,media=cdrom,readonly"
+      '-drive', f"file={self.path},format=raw,if=scsi,media=cdrom,readonly"
     ]
 
 class QemuDiskManager(QemuConfig):
@@ -579,7 +578,7 @@ class QemuConfigDrive(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-drive', f"file={self.path},media=cdrom,if=virtio"
+      '-drive', f"file={self.path},format=raw,if=scsi,media=cdrom,readonly"
     ]
 
 class PersistentConfig():
