@@ -52,7 +52,8 @@ class QemuStandardOpts(QemuConfig):
     '-device', 'virtio-serial',
     '-device', 'virtserialport,chardev=qga0,name=org.qemu.guest_agent.0',
     '-device', 'virtio-balloon',
-    '-device', 'virtio-rng-pci,max-bytes=1024,period=1000'
+    '-device', 'virtio-rng-pci,max-bytes=1024,period=1000',
+    '-vga', 'virtio'
   ]
 
   def __init__(self, cpu=2, ram=2048, rtc_mode='utc', machine='q35'):
