@@ -90,7 +90,7 @@ class QemuStandardOpts(QemuConfig):
   def kvm(self):
     if self._kvm:
       return [
-        '-accel kvm,tcg',
+        '-enable-kvm',
         '-cpu', 'host'        
       ]
     else:
