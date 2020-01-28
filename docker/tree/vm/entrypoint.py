@@ -254,7 +254,7 @@ class QemuDiskManager(QemuConfig):
   
   def add_disk(self, size, immutable=False, source=None, always_pull=False):
     disk_path = os.path.join(self.disk_root, f"disk{len(self.disks)}.qcow2")
-    disk = QemuDisk(path=disk_path, size=size, index=len(self.disks), immutable=immutable, source=source)
+    disk = QemuDisk(path=disk_path, size=size, index=len(self.disks), immutable=immutable, source=source, always_pull=always_pull)
     log.info(f"Adding disk '{disk_path}' size={size}")
     self.disks.append(disk)
 
@@ -736,8 +736,10 @@ def run(machine, cpu, ram, nics, disks, cdroms, vm_data, passthrough_first_nic, 
         if 'source=' in prop:
           source=prop.replace('source=','')
         if 'always_pull' in prop:
+          log.info(f"Disk image will always_pull")
           always_pull=True
         if 'immutable' in prop:
+          log.info(f"Disk image is immutable")
           immutable=True
         
       vmdisks.add_disk(size=size, immutable=immutable, source=source, always_pull=always_pull)
