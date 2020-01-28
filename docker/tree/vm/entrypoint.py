@@ -261,7 +261,7 @@ class QemuDiskManager(QemuConfig):
   def add_cdrom(self, disk_path=None, source=None, always_pull=False):
     if not disk_path:
       disk_path = os.path.join(self.disk_root, f"diskcd{len(self.disks)}.iso")
-    disk = QemuCDROM(path=disk_path, index=len(self.disks), source=source, always_pull=always_pull)
+    disk = QemuCDROM(path=disk_path, source=source, always_pull=always_pull)
     log.info(f"Adding cdrom '{disk_path}'")
     self.disks.append(disk)
 
