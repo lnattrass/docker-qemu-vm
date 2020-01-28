@@ -179,7 +179,7 @@ class QemuDisk(QemuConfig):
 
     # Check if image source exists
     if self.source:
-      if self.always_pull(self.path):
+      if self.always_pull:
         log.info(f"Disk{self.index} set to always_pull, pulling image:")
         _pull_disk_image(self.source, self.path)
         return
@@ -216,7 +216,7 @@ class QemuCDROM(QemuConfig):
 
     # Check if image source exists
     if self.source:
-      if self.always_pull(self.path):
+      if self.always_pull:
         log.info(f"Disk{self.index} set to always_pull, pulling image:")
         _pull_disk_image(self.source, self.path)
         return
