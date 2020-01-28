@@ -120,13 +120,14 @@ class QemuStandardOpts(QemuConfig):
       *self.kvm
     ]
 
-
 class QemuDisk(QemuConfig):
-  def __init__(self, path, size, index, immutable=False):
+  def __init__(self, path, size, index, source=None, always_pull=False, immutable=False):
     self.path = path
     self.size = size
     self.immutable = immutable
-    self.disk_index = index
+    self.index = index
+    self.source = source
+    self.always_pull = always_pull
   
   @property
   def immutable(self):
@@ -175,6 +176,18 @@ class QemuDisk(QemuConfig):
 
   def prepare(self):
     log.info(f"Prepare disk: {self.path}")
+
+    # Check if image source exists
+    if self.source:
+      if self.always_pull(self.path):
+        log.info(f"Disk{self.index} set to always_pull, pulling image:")
+        _pull_disk_image(self.source, self.path)
+        return
+      if not os.path.isfile(self.path):
+        log.info(f"Disk{self.index} is missing, pulling from source:")
+        _pull_disk_image(self.source, self.path)
+        return
+
     # Create disk if necessary
     if not os.path.isfile(self.path):
       self._create_disk()
@@ -186,45 +199,70 @@ class QemuDisk(QemuConfig):
   def cmdline(self):
     log.debug(f"{self.__class__.__name__}: generating cmdline")
     return [
-      '-object', f'iothread,id=io{self.disk_index}',
-      '-device', f'virtio-blk-pci,drive=disk{self.disk_index},iothread=io{self.disk_index}',
-      '-drive', f"file={self.path},if=none,snapshot={self.immutable},cache=none,id=disk{self.disk_index},aio=native"
+      '-object', f'iothread,id=io{self.index}',
+      '-device', f'virtio-blk-pci,drive=disk{self.index},iothread=io{self.index}',
+      '-drive', f"file={self.path},if=none,snapshot={self.immutable},cache=none,id=disk{self.index},aio=native"
+    ]
+
+class QemuCDROM(QemuConfig):
+  def __init__(self, path, index, source=None, always_pull=False):
+    self.path = path
+    self.index = index
+    self.source = source
+    self.always_pull = always_pull
+  
+  def prepare(self):
+    log.info(f"Prepare cdrom: {self.path}")
+
+    # Check if image source exists
+    if self.source:
+      if self.always_pull(self.path):
+        log.info(f"Disk{self.index} set to always_pull, pulling image:")
+        _pull_disk_image(self.source, self.path)
+        return
+      if not os.path.isfile(self.path):
+        log.info(f"Disk{self.index} is missing, pulling from source:")
+        _pull_disk_image(self.source, self.path)
+        return
+
+    # Create disk if necessary
+    if not os.path.isfile(self.path):
+      raise FileNotFoundError(f"Unable to find {self.path} and source is not set")
+
+  def cmdline(self):
+    log.debug(f"{self.__class__.__name__}: generating cmdline")
+    return [
+      '-object', f'iothread,id=io{self.index}',
+      '-device', f'virtio-blk-pci,drive=disk{self.index},iothread=io{self.index}',
+      '-drive', f"file={self.path},if=none,media=cdrom,cache=none,id=disk{self.index},aio=native"
     ]
 
 class QemuDiskManager(QemuConfig):
   disks = []
   root_disk_ready=False
-  def __init__(self, disk_root, immutable=False, image_source=None, image_always_pull=False):
+  def __init__(self, disk_root):
     self.disk_root = disk_root
-    self.immutable = immutable
-    self.image_source = image_source
-    self.image_always_pull = image_always_pull
   
-  def add_disk(self, size):
+  def add_disk(self, size, immutable=False, source=None, always_pull=False):
     disk_path = os.path.join(self.disk_root, f"disk{len(self.disks)}.qcow2")
-    disk = QemuDisk(path=disk_path, size=size, index=len(self.disks), immutable=self.immutable)
-    log.info(f"Adding disk '{disk_path}' size={size}'")
+    disk = QemuDisk(path=disk_path, size=size, index=len(self.disks), immutable=immutable, source=source)
+    log.info(f"Adding disk '{disk_path}' size={size}")
+    self.disks.append(disk)
+
+  def add_cdrom(self, disk_path=None, source=None, always_pull=False):
+    if not disk_path:
+      disk_path = os.path.join(self.disk_root, f"diskcd{len(self.disks)}.iso")
+    disk = QemuCDROM(path=disk_path, index=len(self.disks), source=source, always_pull=always_pull)
+    log.info(f"Adding cdrom '{disk_path}'")
     self.disks.append(disk)
 
   def prepare(self):
     """
     Pull disk images if necessary.
     
-    QemuDisk.prepare() handles resize (only if required)
-    """
-    for idx, disk in enumerate(self.disks):
-      # Root disk is first
-      # Check if we need to pull it 
-      if idx == 0:
-        if self.image_always_pull:
-          log.info("image-always-pull is set, downloading a new image")
-          _pull_disk_image(self.image_source, disk.path)
-        elif not os.path.isfile(disk.path):
-          log.info("root-disk does not exist yet, downloading a new image")
-          _pull_disk_image(self.image_source, disk.path)
-        else:
-          log.debug("always-pull is not set, root disk exists. no need to pull image.")
-      
+    QemuDisk.prepare() handles pull and resize (only if required)
+    """ 
+    for disk in self.disks:
       disk.prepare()
 
   def cmdline(self):
@@ -640,7 +678,8 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 @click.option('--cpu', default="2", type=str, help="CPU's assigned to the VM")
 @click.option('--ram', default=2048, help="RAM assigned to the VM (in MB)")
 @click.option('--nic','nics', multiple=True, help="Network Cards to Bridge to the VM (can be used multiple times)", default=['eth0'])
-@click.option('--disk', 'disk_sizes', multiple=True, help="Disks to provide to the VM (the first must be the boot disk)", default=['20G'])
+@click.option('--disk', 'disks', multiple=True, help="Disks to provide to the VM", default=['20G'])
+@click.option('--cdrom', 'cdroms', multiple=True, help="ISO's to provide to the VM (--cdrom source=x,always_pull)")
 @click.option('--image-source', type=str, help="Image to download as the root disk")
 @click.option('--image-always-pull', type=bool, is_flag=True, default=False, help="Always download the root disk image?")
 @click.option('--immutable', type=bool, is_flag=True, default=False, help="When this machine is shutdown, discard all changes to the disks.")
@@ -668,7 +707,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(machine, cpu, ram, nics, disk_sizes, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
+def run(machine, cpu, ram, nics, disks, cdroms, vm_data, image_source, image_always_pull, immutable, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
@@ -684,10 +723,38 @@ def run(machine, cpu, ram, nics, disk_sizes, vm_data, image_source, image_always
     ]
     
     # Add disks
-    disks = QemuDiskManager(disk_root=vm_data, immutable=immutable, image_source=image_source, image_always_pull=image_always_pull)
-    for size in disk_sizes:
-      disks.add_disk(size=size)
-    qemu_options.append(disks)
+    vmdisks = QemuDiskManager(disk_root=vm_data)
+    for disk in disks:
+      size='5G'
+      source=None
+      always_pull=False
+      immutable=False
+      disk_props = disk.split(',')
+      for prop in disk_props:
+        if 'size=' in prop:
+          size=prop.replace('size=','')
+        if 'source=' in prop:
+          source=prop.replace('source=','')
+        if 'always_pull' in prop:
+          always_pull=True
+        if 'immutable' in prop:
+          immutable=True
+        
+      vmdisks.add_disk(size=size, immutable=immutable, source=source, always_pull=always_pull)
+
+    for cdrom in cdroms:
+      source=None
+      always_pull=False
+      disk_props = cdrom.split(',')
+      for prop in disk_props:
+        if 'source=' in prop:
+          source=prop.replace('source=','')
+        if 'always_pull' in prop:
+          always_pull=True
+      vmdisks.add_cdrom(source=source, always_pull=always_pull)
+      
+
+    qemu_options.append(vmdisks)
 
     # Add networks
     networks = QemuNetworkManager(passthrough_first_nic=passthrough_first_nic)
