@@ -160,7 +160,7 @@ class QemuDisk(QemuConfig):
 
   def _create_disk(self):
     log.info(f"Create disk {self.path}: {self.size}")
-    exec(['qemu-img', 'create', '-f', 'qcow2', '-o', 'cluster-size=2M', self.path, f"{self.size}"])
+    exec(['qemu-img', 'create', '-f', 'qcow2', '-o', 'cluster_size=2M', self.path, f"{self.size}"])
 
   def _resize_disk(self):
     log.info(f"Checking disk size: {self.path}")
