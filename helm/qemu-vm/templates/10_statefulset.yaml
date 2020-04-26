@@ -46,6 +46,7 @@ spec:
         configMap:
           name: {{ .Release.Name }}-config
       {{ end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 120 }}
       containers:
       - image: "{{ .Values.image_repository }}:{{ .Values.image_tag }}"
         imagePullPolicy: "{{ .Values.image_pull_policy }}"
