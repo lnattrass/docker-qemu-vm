@@ -176,11 +176,15 @@ class QemuDisk(QemuConfig):
       log.warning(f"Disk wanted size is less than actual size. Disks cannot be shrunk safely, resize cancelled.")  
 
   def _convert_to_qcow(self):
-    log.info("Converting the disk to qcow2: ")
-    # Convert the image to qcow2 (cluster-size 2M)
-    exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M", self.path, f"{self.path}.tmp"])
-    os.remove(self.path)
-    os.rename(f"{self.path}.tmp", self.path)
+    disk_info = json.loads(exec(['qemu-img', 'info', '--output=json', self.path]))
+    if disk_info['format'] != 'qcow2':
+      log.info("Converting the disk to qcow2: ")
+      # Convert the image to qcow2 (cluster-size 2M)
+      exec(["qemu-img", "convert", "-O", "qcow2", "-o", "cluster_size=2M", self.path, f"{self.path}.tmp"])
+      os.remove(self.path)
+      os.rename(f"{self.path}.tmp", self.path)
+    else:
+      log.info("Disk is already qcow2")
 
   def prepare(self):
     log.info(f"Prepare disk: {self.path}")
