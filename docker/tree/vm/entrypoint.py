@@ -45,14 +45,18 @@ class QemuStandardOpts(QemuConfig):
     '-global', 'ICH9-LPC.disable_s3=1',
     '-global', 'ICH9-LPC.disable_s4=1',
     '-no-hpet',
-    '-chardev', 'stdio,mux=on,id=char0',
-    '-chardev', 'socket,path=/run/qemu-serial0,server,nowait,id=char1',
-    '-chardev', 'socket,path=/run/qemu-qga,server,nowait,id=qga0',
-    '-monitor', 'unix:/run/qemu-monitor,server,nowait',
     '-device', 'virtio-serial',
-    '-device', 'virtserialport,chardev=char0,name=console',
+    
+    '-chardev', 'stdio,mux=on,id=char0',
+    '-device', 'virtioconsole,chardev=char0,name=console',
+    
+    '-chardev', 'socket,path=/run/qemu-serial0,server,nowait,id=char1',
+    '-device', 'virtioconsole,chardev=char1,name=tty',
+    
+    '-chardev', 'socket,path=/run/qemu-qga,server,nowait,id=qga0',
     '-device', 'virtserialport,chardev=qga0,name=org.qemu.guest_agent.0',
-    '-device', 'virtserialport,chardev=char1,name=tty',
+    
+    '-monitor', 'unix:/run/qemu-monitor,server,nowait',
     '-device', 'virtio-balloon',
     '-device', 'virtio-rng-pci,max-bytes=1024,period=1000',
     '-vga', 'virtio'
