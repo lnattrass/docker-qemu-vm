@@ -48,14 +48,14 @@ class QemuStandardOpts(QemuConfig):
     '-device', 'virtio-serial',
     
     '-chardev', 'stdio,mux=on,id=char0',
-    '-device', 'virtioconsole,chardev=char0,name=console',
+    '-device', 'virtconsole,chardev=char0,name=console',
     
     '-chardev', 'socket,path=/run/qemu-serial0,server,nowait,id=char1',
-    '-device', 'virtioconsole,chardev=char1,name=tty',
+    '-device', 'virtconsole,chardev=char1,name=tty',
     
     '-chardev', 'socket,path=/run/qemu-qga,server,nowait,id=qga0',
     '-device', 'virtserialport,chardev=qga0,name=org.qemu.guest_agent.0',
-    
+
     '-monitor', 'unix:/run/qemu-monitor,server,nowait',
     '-device', 'virtio-balloon',
     '-device', 'virtio-rng-pci,max-bytes=1024,period=1000',
