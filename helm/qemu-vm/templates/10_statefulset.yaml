@@ -86,6 +86,10 @@ spec:
         - --instance-secret-key={{ $key | replace "-" "_" }}
         {{- end }}
         {{- end }}
+        {{- if .Values.qemu_extra_args }}
+        {{- range .Values.qemu_extra_args }}
+        - --qemu_extra_arg={{ . }}
+        {{- end }}
         volumeMounts:
         - name: {{ .Release.Name }}-pvc
           mountPath: /vm/data

@@ -63,13 +63,13 @@ class QemuStandardOpts(QemuConfig):
     '-vga', 'virtio'
   ]
 
-  def __init__(self, cpu=2, ram=2048, rtc_mode='utc', machine='q35', extra_qemu_opts=[]):
+  def __init__(self, cpu=2, ram=2048, rtc_mode='utc', machine='q35', extra_qemu_args=[]):
     self.cpu = cpu
     self.ram = ram
     self.guest_name = socket.gethostname()
     self.rtc_mode = rtc_mode
     self.machine = machine
-    self.extra_qemu_opts = extra_qemu_opts
+    self.extra_qemu_args = extra_qemu_args
 
     self._uuid = None
     self._default_uuid = None
@@ -127,7 +127,7 @@ class QemuStandardOpts(QemuConfig):
       "-smp",   f"{self.cpu}",
       "-m",     f"{self.ram}m",
       *self.kvm,
-      *self.extra_qemu_opts
+      *self.extra_qemu_args
     ]
 
 class QemuDisk(QemuConfig):
