@@ -59,15 +59,17 @@ class QemuStandardOpts(QemuConfig):
     '-monitor', 'unix:/run/qemu-monitor,server,nowait',
     '-device', 'virtio-balloon',
     '-device', 'virtio-rng-pci,max-bytes=1024,period=1000',
+    '-fw_cfg', 'name=sysupdate,string=false',
     '-vga', 'virtio'
   ]
 
-  def __init__(self, cpu=2, ram=2048, rtc_mode='utc', machine='q35'):
+  def __init__(self, cpu=2, ram=2048, rtc_mode='utc', machine='q35', extra_qemu_opts=[]):
     self.cpu = cpu
     self.ram = ram
     self.guest_name = socket.gethostname()
     self.rtc_mode = rtc_mode
     self.machine = machine
+    self.extra_qemu_opts = extra_qemu_opts
 
     self._uuid = None
     self._default_uuid = None
@@ -124,7 +126,8 @@ class QemuStandardOpts(QemuConfig):
       *self.static_opts,
       "-smp",   f"{self.cpu}",
       "-m",     f"{self.ram}m",
-      *self.kvm
+      *self.kvm,
+      *self.extra_qemu_opts
     ]
 
 class QemuDisk(QemuConfig):
@@ -695,6 +698,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 @click.option('--cdrom', 'cdroms', multiple=True, help="ISO's to provide to the VM (--cdrom source=src.com/x,always_pull)")
 @click.option('--passthrough-first-nic', type=bool, is_flag=True, default=False, help="Passthrough the first NIC's IP address from the command line.")
 @click.option('--vnc-port', type=int, default=None, help="VNC Port to use for remote console (this will be redirected in the container)")
+@click.option('--extra-qemu-arg', 'extra_qemu_args', multiple=True, help="Additional arguments to add to QEMU commandline")
 
 @click.option('--vm-data',
   type=click.Path(exists=True, file_okay=False, writable=True, resolve_path=True),
@@ -717,7 +721,7 @@ def exec(cmd, custom_env={}, cwd=None, shell=False):
 
 @click.option('--debug', type=bool, is_flag=True, default=False, help="Enable debug logging")
 @click.option('--test', type=bool, is_flag=True, default=False, help="Don't actually execute the VM")
-def run(machine, cpu, ram, nics, disks, cdroms, vm_data, passthrough_first_nic, vnc_port, config_path, user_data, instance_secret_key, test, debug):
+def run(machine, cpu, ram, nics, disks, cdroms, vm_data, passthrough_first_nic, vnc_port, extra_qemu_args, config_path, user_data, instance_secret_key, test, debug):
   # Runs a VM, generating and persisting configurations as necessary
   if debug:
     logbook.StreamHandler(sys.stdout, level='DEBUG').push_application()
@@ -729,7 +733,7 @@ def run(machine, cpu, ram, nics, disks, cdroms, vm_data, passthrough_first_nic, 
   # Create the configuration object
   with PersistentConfig(config_path) as config:
     qemu_options = [
-      QemuStandardOpts(cpu=cpu, ram=ram, machine=machine),
+      QemuStandardOpts(cpu=cpu, ram=ram, machine=machine, extra_qemu_args=extra_qemu_args),
     ]
     
     # Add disks
