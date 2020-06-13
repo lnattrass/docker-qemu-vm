@@ -90,6 +90,7 @@ spec:
         {{- range .Values.qemu_extra_args }}
         - --extra-qemu-arg={{ . }}
         {{- end }}
+        {{- end }}
         volumeMounts:
         - name: {{ .Release.Name }}-pvc
           mountPath: /vm/data
