@@ -88,7 +88,7 @@ spec:
         {{- end }}
         {{- if .Values.qemu_extra_args }}
         {{- range .Values.qemu_extra_args }}
-        - --qemu_extra_arg={{ . }}
+        - --extra-qemu-arg={{ . }}
         {{- end }}
         volumeMounts:
         - name: {{ .Release.Name }}-pvc
