@@ -9,6 +9,7 @@ RUN apk add --update --no-cache \
   cdrkit \
   procps \
   python3 \
+  py3-pip \
   iproute2 \
   qemu-img \
   moreutils \
